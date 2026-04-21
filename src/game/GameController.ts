@@ -18,7 +18,7 @@ import { DicePanel } from '../ui/DicePanel';
 import { FloorSelector } from '../ui/FloorSelector';
 import { DraftScreen } from '../ui/DraftScreen';
 
-const PICKS_PER_PLAYER = 4;
+const PICKS_PER_PLAYER = 5;
 
 export class GameController {
   private map: MapConfig;
