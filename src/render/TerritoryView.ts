@@ -1,6 +1,7 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import type { TerritoryData } from '../map/MapData';
 import type { Player, TerritoryState } from '../game/GameState';
+import { toIsometric } from './constants';
 
 export class TerritoryView {
   container: Container;
@@ -23,6 +24,12 @@ export class TerritoryView {
     this.container.eventMode = 'static';
     this.container.cursor = 'pointer';
 
+    // Convert polygon to isometric
+    const isoPolygon = data.polygon.map(([x, y]) => {
+      const iso = toIsometric(x, y);
+      return [iso.x, iso.y] as [number, number];
+    });
+
     // Background polygon
     this.bg = new Graphics();
     this.container.addChild(this.bg);
@@ -33,11 +40,11 @@ export class TerritoryView {
     this.container.addChild(this.highlight);
 
     // Draw the polygon shape
-    this.drawPolygon(data.polygon, state, players);
-    this.drawHighlightPolygon(data.polygon);
+    this.drawPolygon(isoPolygon, state, players);
+    this.drawHighlightPolygon(isoPolygon);
 
     // Territory name
-    const center = this.getCenter(data.polygon);
+    const center = this.getCenter(isoPolygon);
     this.nameText = new Text({
       text: data.name,
       style: {
@@ -95,9 +102,6 @@ export class TerritoryView {
     const owner = players.find((p) => p.id === state.ownerId);
     const color = owner ? owner.color : 0x444444;
 
-    this.bg.clear();
-    // We need the polygon data to redraw, but we store it via the initial draw
-    // Instead, we'll just tint
     this.bg.tint = color;
     this.armyText.text = String(state.armies);
   }

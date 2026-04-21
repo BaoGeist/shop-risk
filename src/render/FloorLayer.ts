@@ -2,6 +2,7 @@ import { Container, Graphics, Text } from 'pixi.js';
 import type { FloorData } from '../map/MapData';
 import type { GameState } from '../game/GameState';
 import { TerritoryView } from './TerritoryView';
+import { toIsometric } from './constants';
 
 export class FloorLayer {
   container: Container;
@@ -16,14 +17,23 @@ export class FloorLayer {
   ) {
     this.container = new Container();
 
-    // Floor base — subtle grid background
+    // Floor base — isometric diamond background
     const base = new Graphics();
-    base.rect(-20, -20, 340, 220);
+    // Map bounds: roughly 0,0 to 300,180. Draw isometric quad for those corners.
+    const corners: [number, number][] = [
+      [0, 0], [310, 0], [310, 190], [0, 190],
+    ];
+    const isoCorners = corners.map(([x, y]) => {
+      const p = toIsometric(x, y);
+      return [p.x, p.y] as [number, number];
+    });
+    base.poly(isoCorners.flat());
     base.fill({ color: 0x16213e, alpha: 0.3 });
     base.stroke({ color: 0x0f3460, width: 1, alpha: 0.5 });
     this.container.addChild(base);
 
-    // Floor label
+    // Floor label — position at top-left iso corner
+    const labelPos = toIsometric(-10, -10);
     this.floorLabel = new Text({
       text: floor.name,
       style: {
@@ -33,8 +43,8 @@ export class FloorLayer {
         fontWeight: 'bold',
       },
     });
-    this.floorLabel.x = -15;
-    this.floorLabel.y = -18;
+    this.floorLabel.x = labelPos.x;
+    this.floorLabel.y = labelPos.y - 14;
     this.container.addChild(this.floorLabel);
 
     // Territory views
