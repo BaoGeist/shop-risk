@@ -2,24 +2,25 @@ import './style.css';
 import { loadMap } from './map/MapLoader';
 import { createInitialState } from './game/GameLoop';
 import { IsometricRenderer } from './render/IsometricRenderer';
+import { GameController } from './game/GameController';
+import { StartScreen } from './ui/StartScreen';
 
 async function boot() {
-  console.log('Shop Risk loading...');
-
   const map = await loadMap('/src/map/maps/office.json');
-  const state = createInitialState(map, 4);
 
-  console.log(
-    `Loaded: ${map.name} — ${map.floors.length} floors, ${state.territories.size} territories`,
-  );
+  // Show start screen
+  const startScreen = new StartScreen();
+  const playerCount = await startScreen.show();
 
+  // Initialize game
+  const state = createInitialState(map, playerCount);
   const container = document.getElementById('game-container')!;
   const renderer = new IsometricRenderer();
   await renderer.init(container);
   renderer.buildMap(map, state);
 
-  // Store globally for debugging
-  Object.assign(window, { map, state, renderer });
+  // Start game controller
+  new GameController(map, state, renderer);
 }
 
 boot();
