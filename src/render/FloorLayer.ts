@@ -21,7 +21,7 @@ export class FloorLayer {
     const base = new Graphics();
     // Map bounds: roughly 0,0 to 300,180. Draw isometric quad for those corners.
     const corners: [number, number][] = [
-      [-10, -10], [520, -10], [520, 165], [-10, 165],
+      [-10, -10], [610, -10], [610, 180], [-10, 180],
     ];
     const isoCorners = corners.map(([x, y]) => {
       const p = toIsometric(x, y);
