@@ -1,4 +1,4 @@
-export const FLOOR_HEIGHT_GAP = 120;
+export const FLOOR_HEIGHT_GAP = 180;
 export const TILE_SCALE = 1.5;
 
 /**

@@ -8,70 +8,106 @@
       "territories": [
         {
           "id": "f1-lobby",
-          "name": "Lobby",
-          "polygon": [[0, 0], [120, 0], [120, 80], [0, 80]],
-          "adjacencies": ["f1-reception", "f1-security"]
+          "name": "Main Lobby",
+          "polygon": [[0, 0], [140, 0], [140, 60], [0, 60]],
+          "adjacencies": ["f1-reception", "f1-coat-check"]
         },
         {
           "id": "f1-reception",
           "name": "Reception",
-          "polygon": [[120, 0], [240, 0], [240, 80], [120, 80]],
-          "adjacencies": ["f1-lobby", "f1-mailroom", "f1-elevator"]
+          "polygon": [[140, 0], [260, 0], [260, 60], [140, 60]],
+          "adjacencies": ["f1-lobby", "f1-waiting", "f1-security"]
+        },
+        {
+          "id": "f1-waiting",
+          "name": "Waiting Area",
+          "polygon": [[260, 0], [400, 0], [400, 90], [260, 90]],
+          "adjacencies": ["f1-reception", "f1-elevator"]
+        },
+        {
+          "id": "f1-coat-check",
+          "name": "Coat Check",
+          "polygon": [[0, 60], [90, 60], [90, 130], [0, 130]],
+          "adjacencies": ["f1-lobby", "f1-mailroom"]
         },
         {
           "id": "f1-security",
           "name": "Security",
-          "polygon": [[0, 80], [120, 80], [120, 160], [0, 160]],
-          "adjacencies": ["f1-lobby", "f1-mailroom"]
+          "polygon": [[140, 60], [260, 60], [260, 130], [140, 130]],
+          "adjacencies": ["f1-reception", "f1-mailroom", "f1-elevator"]
         },
         {
           "id": "f1-mailroom",
           "name": "Mailroom",
-          "polygon": [[120, 80], [240, 80], [240, 160], [120, 160]],
-          "adjacencies": ["f1-reception", "f1-security", "f1-elevator"]
+          "polygon": [[0, 130], [180, 130], [180, 200], [0, 200]],
+          "adjacencies": ["f1-coat-check", "f1-security", "f1-loading-dock"]
+        },
+        {
+          "id": "f1-loading-dock",
+          "name": "Loading Dock",
+          "polygon": [[180, 130], [310, 130], [310, 200], [180, 200]],
+          "adjacencies": ["f1-mailroom", "f1-elevator"]
         },
         {
           "id": "f1-elevator",
-          "name": "Elevator",
-          "polygon": [[240, 50], [290, 50], [290, 110], [240, 110]],
-          "adjacencies": ["f1-reception", "f1-mailroom", "f2-elevator"]
+          "name": "Elevator Hall",
+          "polygon": [[310, 60], [400, 60], [400, 200], [310, 200]],
+          "adjacencies": ["f1-waiting", "f1-security", "f1-loading-dock", "f2-elevator"]
         }
       ]
     },
     {
       "id": "floor-2",
       "name": "Floor 2 — Event & Community",
-      "bonus": 2,
+      "bonus": 3,
       "territories": [
         {
-          "id": "f2-event-space",
-          "name": "Event Space",
-          "polygon": [[0, 0], [160, 0], [160, 100], [0, 100]],
-          "adjacencies": ["f2-cafe", "f2-lounge"]
+          "id": "f2-main-hall",
+          "name": "Main Event Hall",
+          "polygon": [[0, 0], [200, 0], [200, 100], [0, 100]],
+          "adjacencies": ["f2-stage", "f2-atrium", "f2-cafe"]
+        },
+        {
+          "id": "f2-stage",
+          "name": "Stage",
+          "polygon": [[200, 0], [320, 0], [320, 70], [200, 70]],
+          "adjacencies": ["f2-main-hall", "f2-av-room"]
+        },
+        {
+          "id": "f2-av-room",
+          "name": "AV Room",
+          "polygon": [[320, 0], [400, 0], [400, 70], [320, 70]],
+          "adjacencies": ["f2-stage", "f2-elevator"]
+        },
+        {
+          "id": "f2-atrium",
+          "name": "Atrium",
+          "polygon": [[0, 100], [130, 100], [130, 200], [0, 200]],
+          "adjacencies": ["f2-main-hall", "f2-cafe"]
         },
         {
           "id": "f2-cafe",
           "name": "Café",
-          "polygon": [[160, 0], [290, 0], [290, 100], [160, 100]],
-          "adjacencies": ["f2-event-space", "f2-phone-booths", "f2-elevator"]
-        },
-        {
-          "id": "f2-lounge",
-          "name": "Lounge",
-          "polygon": [[0, 100], [140, 100], [140, 180], [0, 180]],
-          "adjacencies": ["f2-event-space", "f2-phone-booths"]
+          "polygon": [[130, 100], [260, 100], [260, 160], [130, 160]],
+          "adjacencies": ["f2-main-hall", "f2-atrium", "f2-phone-booths"]
         },
         {
           "id": "f2-phone-booths",
           "name": "Phone Booths",
-          "polygon": [[140, 100], [290, 100], [290, 180], [140, 180]],
+          "polygon": [[260, 70], [340, 70], [340, 160], [260, 160]],
           "adjacencies": ["f2-cafe", "f2-lounge", "f2-elevator"]
         },
         {
+          "id": "f2-lounge",
+          "name": "Community Lounge",
+          "polygon": [[130, 160], [310, 160], [310, 220], [130, 220]],
+          "adjacencies": ["f2-phone-booths", "f2-elevator"]
+        },
+        {
           "id": "f2-elevator",
-          "name": "Elevator",
-          "polygon": [[240, 50], [290, 50], [290, 110], [240, 110]],
-          "adjacencies": ["f2-cafe", "f2-phone-booths", "f1-elevator", "f3-elevator"]
+          "name": "Elevator Hall",
+          "polygon": [[340, 70], [400, 70], [400, 220], [340, 220]],
+          "adjacencies": ["f2-av-room", "f2-phone-booths", "f2-lounge", "f1-elevator", "f3-elevator"]
         }
       ]
     },
@@ -81,34 +117,58 @@
       "bonus": 3,
       "territories": [
         {
-          "id": "f3-open-workspace",
-          "name": "Open Workspace",
-          "polygon": [[0, 0], [180, 0], [180, 90], [0, 90]],
-          "adjacencies": ["f3-team-pods", "f3-quiet-zone"]
+          "id": "f3-open-east",
+          "name": "Open Workspace East",
+          "polygon": [[0, 0], [160, 0], [160, 80], [0, 80]],
+          "adjacencies": ["f3-open-west", "f3-quiet-zone"]
         },
         {
-          "id": "f3-team-pods",
-          "name": "Team Pods",
-          "polygon": [[180, 0], [290, 0], [290, 90], [180, 90]],
-          "adjacencies": ["f3-open-workspace", "f3-kitchenette", "f3-elevator"]
+          "id": "f3-open-west",
+          "name": "Open Workspace West",
+          "polygon": [[160, 0], [300, 0], [300, 80], [160, 80]],
+          "adjacencies": ["f3-open-east", "f3-team-pods", "f3-war-room"]
+        },
+        {
+          "id": "f3-war-room",
+          "name": "War Room",
+          "polygon": [[300, 0], [400, 0], [400, 80], [300, 80]],
+          "adjacencies": ["f3-open-west", "f3-elevator"]
         },
         {
           "id": "f3-quiet-zone",
           "name": "Quiet Zone",
-          "polygon": [[0, 90], [140, 90], [140, 170], [0, 170]],
-          "adjacencies": ["f3-open-workspace", "f3-kitchenette"]
+          "polygon": [[0, 80], [120, 80], [120, 160], [0, 160]],
+          "adjacencies": ["f3-open-east", "f3-kitchenette"]
+        },
+        {
+          "id": "f3-team-pods",
+          "name": "Team Pods",
+          "polygon": [[120, 80], [240, 80], [240, 140], [120, 140]],
+          "adjacencies": ["f3-open-west", "f3-kitchenette", "f3-collab-nook"]
+        },
+        {
+          "id": "f3-collab-nook",
+          "name": "Collab Nook",
+          "polygon": [[240, 80], [340, 80], [340, 140], [240, 140]],
+          "adjacencies": ["f3-team-pods", "f3-elevator"]
         },
         {
           "id": "f3-kitchenette",
           "name": "Kitchenette",
-          "polygon": [[140, 90], [290, 90], [290, 170], [140, 170]],
-          "adjacencies": ["f3-team-pods", "f3-quiet-zone", "f3-elevator"]
+          "polygon": [[0, 160], [200, 160], [200, 220], [0, 220]],
+          "adjacencies": ["f3-quiet-zone", "f3-team-pods", "f3-server-closet"]
+        },
+        {
+          "id": "f3-server-closet",
+          "name": "Server Closet",
+          "polygon": [[200, 140], [340, 140], [340, 220], [200, 220]],
+          "adjacencies": ["f3-kitchenette", "f3-elevator"]
         },
         {
           "id": "f3-elevator",
-          "name": "Elevator",
-          "polygon": [[240, 50], [290, 50], [290, 110], [240, 110]],
-          "adjacencies": ["f3-team-pods", "f3-kitchenette", "f2-elevator", "f4-elevator"]
+          "name": "Elevator Hall",
+          "polygon": [[340, 80], [400, 80], [400, 220], [340, 220]],
+          "adjacencies": ["f3-war-room", "f3-collab-nook", "f3-server-closet", "f2-elevator", "f4-elevator"]
         }
       ]
     },
@@ -118,34 +178,58 @@
       "bonus": 3,
       "territories": [
         {
-          "id": "f4-open-workspace",
-          "name": "Open Workspace",
+          "id": "f4-bullpen",
+          "name": "The Bullpen",
           "polygon": [[0, 0], [180, 0], [180, 90], [0, 90]],
-          "adjacencies": ["f4-war-room", "f4-collab-area"]
+          "adjacencies": ["f4-focus-rooms", "f4-whiteboard-wall"]
         },
         {
-          "id": "f4-war-room",
-          "name": "War Room",
-          "polygon": [[180, 0], [290, 0], [290, 90], [180, 90]],
-          "adjacencies": ["f4-open-workspace", "f4-kitchenette", "f4-elevator"]
+          "id": "f4-focus-rooms",
+          "name": "Focus Rooms",
+          "polygon": [[180, 0], [280, 0], [280, 60], [180, 60]],
+          "adjacencies": ["f4-bullpen", "f4-standup-area"]
         },
         {
-          "id": "f4-collab-area",
-          "name": "Collaboration Area",
-          "polygon": [[0, 90], [140, 90], [140, 170], [0, 170]],
-          "adjacencies": ["f4-open-workspace", "f4-kitchenette"]
+          "id": "f4-standup-area",
+          "name": "Standup Area",
+          "polygon": [[280, 0], [400, 0], [400, 90], [280, 90]],
+          "adjacencies": ["f4-focus-rooms", "f4-elevator"]
         },
         {
-          "id": "f4-kitchenette",
-          "name": "Kitchenette",
-          "polygon": [[140, 90], [290, 90], [290, 170], [140, 170]],
-          "adjacencies": ["f4-war-room", "f4-collab-area", "f4-elevator"]
+          "id": "f4-whiteboard-wall",
+          "name": "Whiteboard Wall",
+          "polygon": [[0, 90], [130, 90], [130, 160], [0, 160]],
+          "adjacencies": ["f4-bullpen", "f4-snack-bar"]
+        },
+        {
+          "id": "f4-pair-stations",
+          "name": "Pair Stations",
+          "polygon": [[130, 60], [280, 60], [280, 130], [130, 130]],
+          "adjacencies": ["f4-bullpen", "f4-debug-den", "f4-snack-bar"]
+        },
+        {
+          "id": "f4-debug-den",
+          "name": "Debug Den",
+          "polygon": [[280, 90], [370, 90], [370, 160], [280, 160]],
+          "adjacencies": ["f4-pair-stations", "f4-standup-area", "f4-elevator"]
+        },
+        {
+          "id": "f4-snack-bar",
+          "name": "Snack Bar",
+          "polygon": [[0, 160], [200, 160], [200, 220], [0, 220]],
+          "adjacencies": ["f4-whiteboard-wall", "f4-pair-stations", "f4-printer-bay"]
+        },
+        {
+          "id": "f4-printer-bay",
+          "name": "Printer Bay",
+          "polygon": [[200, 130], [370, 130], [370, 220], [200, 220]],
+          "adjacencies": ["f4-snack-bar", "f4-debug-den", "f4-elevator"]
         },
         {
           "id": "f4-elevator",
-          "name": "Elevator",
-          "polygon": [[240, 50], [290, 50], [290, 110], [240, 110]],
-          "adjacencies": ["f4-war-room", "f4-kitchenette", "f3-elevator", "f5-elevator"]
+          "name": "Elevator Hall",
+          "polygon": [[370, 60], [400, 60], [400, 220], [370, 220]],
+          "adjacencies": ["f4-standup-area", "f4-debug-den", "f4-printer-bay", "f3-elevator", "f5-elevator"]
         }
       ]
     },
@@ -157,32 +241,56 @@
         {
           "id": "f5-design-studio",
           "name": "Design Studio",
-          "polygon": [[0, 0], [150, 0], [150, 100], [0, 100]],
-          "adjacencies": ["f5-product-den", "f5-meeting-rooms"]
+          "polygon": [[0, 0], [170, 0], [170, 80], [0, 80]],
+          "adjacencies": ["f5-prototype-lab", "f5-research-room"]
+        },
+        {
+          "id": "f5-prototype-lab",
+          "name": "Prototype Lab",
+          "polygon": [[170, 0], [300, 0], [300, 80], [170, 80]],
+          "adjacencies": ["f5-design-studio", "f5-product-den", "f5-usability-lab"]
         },
         {
           "id": "f5-product-den",
           "name": "Product Den",
-          "polygon": [[150, 0], [290, 0], [290, 100], [150, 100]],
-          "adjacencies": ["f5-design-studio", "f5-break-area", "f5-elevator"]
+          "polygon": [[300, 0], [400, 0], [400, 100], [300, 100]],
+          "adjacencies": ["f5-prototype-lab", "f5-elevator"]
         },
         {
-          "id": "f5-meeting-rooms",
-          "name": "Meeting Rooms",
-          "polygon": [[0, 100], [150, 100], [150, 180], [0, 180]],
-          "adjacencies": ["f5-design-studio", "f5-break-area"]
+          "id": "f5-research-room",
+          "name": "Research Room",
+          "polygon": [[0, 80], [120, 80], [120, 160], [0, 160]],
+          "adjacencies": ["f5-design-studio", "f5-gallery"]
         },
         {
-          "id": "f5-break-area",
-          "name": "Break Area",
-          "polygon": [[150, 100], [290, 100], [290, 180], [150, 180]],
-          "adjacencies": ["f5-product-den", "f5-meeting-rooms", "f5-elevator"]
+          "id": "f5-usability-lab",
+          "name": "Usability Lab",
+          "polygon": [[120, 80], [250, 80], [250, 140], [120, 140]],
+          "adjacencies": ["f5-prototype-lab", "f5-gallery", "f5-meeting-pods"]
+        },
+        {
+          "id": "f5-meeting-pods",
+          "name": "Meeting Pods",
+          "polygon": [[250, 100], [350, 100], [350, 160], [250, 160]],
+          "adjacencies": ["f5-usability-lab", "f5-elevator"]
+        },
+        {
+          "id": "f5-gallery",
+          "name": "Gallery",
+          "polygon": [[0, 160], [200, 160], [200, 220], [0, 220]],
+          "adjacencies": ["f5-research-room", "f5-usability-lab", "f5-break-nook"]
+        },
+        {
+          "id": "f5-break-nook",
+          "name": "Break Nook",
+          "polygon": [[200, 140], [350, 140], [350, 220], [200, 220]],
+          "adjacencies": ["f5-gallery", "f5-meeting-pods", "f5-elevator"]
         },
         {
           "id": "f5-elevator",
-          "name": "Elevator",
-          "polygon": [[240, 50], [290, 50], [290, 110], [240, 110]],
-          "adjacencies": ["f5-product-den", "f5-break-area", "f4-elevator", "f6-elevator"]
+          "name": "Elevator Hall",
+          "polygon": [[350, 80], [400, 80], [400, 220], [350, 220]],
+          "adjacencies": ["f5-product-den", "f5-meeting-pods", "f5-break-nook", "f4-elevator", "f6-elevator"]
         }
       ]
     },
@@ -194,32 +302,50 @@
         {
           "id": "f6-exec-suite",
           "name": "Executive Suite",
-          "polygon": [[0, 0], [150, 0], [150, 90], [0, 90]],
-          "adjacencies": ["f6-board-room", "f6-lounge"]
+          "polygon": [[0, 0], [180, 0], [180, 70], [0, 70]],
+          "adjacencies": ["f6-chiefs-row", "f6-strategy-room"]
+        },
+        {
+          "id": "f6-chiefs-row",
+          "name": "Chief's Row",
+          "polygon": [[180, 0], [310, 0], [310, 70], [180, 70]],
+          "adjacencies": ["f6-exec-suite", "f6-board-room"]
         },
         {
           "id": "f6-board-room",
           "name": "Board Room",
-          "polygon": [[150, 0], [290, 0], [290, 90], [150, 90]],
-          "adjacencies": ["f6-exec-suite", "f6-admin-area", "f6-elevator"]
+          "polygon": [[310, 0], [400, 0], [400, 90], [310, 90]],
+          "adjacencies": ["f6-chiefs-row", "f6-elevator"]
         },
         {
-          "id": "f6-lounge",
-          "name": "Lounge",
-          "polygon": [[0, 90], [140, 90], [140, 170], [0, 170]],
-          "adjacencies": ["f6-exec-suite", "f6-admin-area"]
+          "id": "f6-strategy-room",
+          "name": "Strategy Room",
+          "polygon": [[0, 70], [140, 70], [140, 140], [0, 140]],
+          "adjacencies": ["f6-exec-suite", "f6-admin-hub", "f6-vip-lounge"]
         },
         {
-          "id": "f6-admin-area",
-          "name": "Admin Area",
-          "polygon": [[140, 90], [290, 90], [290, 170], [140, 170]],
-          "adjacencies": ["f6-board-room", "f6-lounge", "f6-elevator"]
+          "id": "f6-admin-hub",
+          "name": "Admin Hub",
+          "polygon": [[140, 70], [310, 70], [310, 140], [140, 140]],
+          "adjacencies": ["f6-strategy-room", "f6-chiefs-row", "f6-ea-desks"]
+        },
+        {
+          "id": "f6-vip-lounge",
+          "name": "VIP Lounge",
+          "polygon": [[0, 140], [150, 140], [150, 210], [0, 210]],
+          "adjacencies": ["f6-strategy-room", "f6-ea-desks"]
+        },
+        {
+          "id": "f6-ea-desks",
+          "name": "EA Desks",
+          "polygon": [[150, 140], [310, 140], [310, 210], [150, 210]],
+          "adjacencies": ["f6-admin-hub", "f6-vip-lounge", "f6-elevator"]
         },
         {
           "id": "f6-elevator",
-          "name": "Elevator",
-          "polygon": [[240, 50], [290, 50], [290, 110], [240, 110]],
-          "adjacencies": ["f6-board-room", "f6-admin-area", "f5-elevator", "f7-elevator"]
+          "name": "Elevator Hall",
+          "polygon": [[310, 90], [400, 90], [400, 210], [310, 210]],
+          "adjacencies": ["f6-board-room", "f6-ea-desks", "f5-elevator", "f7-elevator"]
         }
       ]
     },
@@ -231,32 +357,56 @@
         {
           "id": "f7-rooftop",
           "name": "Rooftop Terrace",
-          "polygon": [[0, 0], [160, 0], [160, 90], [0, 90]],
-          "adjacencies": ["f7-game-room", "f7-kitchen"]
+          "polygon": [[0, 0], [200, 0], [200, 80], [0, 80]],
+          "adjacencies": ["f7-bar", "f7-garden"]
+        },
+        {
+          "id": "f7-bar",
+          "name": "Rooftop Bar",
+          "polygon": [[200, 0], [320, 0], [320, 60], [200, 60]],
+          "adjacencies": ["f7-rooftop", "f7-game-room"]
         },
         {
           "id": "f7-game-room",
           "name": "Game Room",
-          "polygon": [[160, 0], [290, 0], [290, 90], [160, 90]],
-          "adjacencies": ["f7-rooftop", "f7-dining-hall", "f7-elevator"]
+          "polygon": [[320, 0], [400, 0], [400, 90], [320, 90]],
+          "adjacencies": ["f7-bar", "f7-elevator"]
+        },
+        {
+          "id": "f7-garden",
+          "name": "Rooftop Garden",
+          "polygon": [[0, 80], [130, 80], [130, 160], [0, 160]],
+          "adjacencies": ["f7-rooftop", "f7-bbq-pit"]
         },
         {
           "id": "f7-kitchen",
           "name": "Kitchen",
-          "polygon": [[0, 90], [140, 90], [140, 170], [0, 170]],
-          "adjacencies": ["f7-rooftop", "f7-dining-hall"]
+          "polygon": [[130, 60], [250, 60], [250, 130], [130, 130]],
+          "adjacencies": ["f7-rooftop", "f7-dining-hall", "f7-bbq-pit"]
+        },
+        {
+          "id": "f7-arcade",
+          "name": "Arcade Corner",
+          "polygon": [[250, 60], [320, 60], [320, 130], [250, 130]],
+          "adjacencies": ["f7-kitchen", "f7-game-room", "f7-elevator"]
+        },
+        {
+          "id": "f7-bbq-pit",
+          "name": "BBQ Pit",
+          "polygon": [[0, 160], [160, 160], [160, 220], [0, 220]],
+          "adjacencies": ["f7-garden", "f7-kitchen", "f7-dining-hall"]
         },
         {
           "id": "f7-dining-hall",
           "name": "Dining Hall",
-          "polygon": [[140, 90], [290, 90], [290, 170], [140, 170]],
-          "adjacencies": ["f7-game-room", "f7-kitchen", "f7-elevator"]
+          "polygon": [[130, 130], [330, 130], [330, 220], [160, 220]],
+          "adjacencies": ["f7-kitchen", "f7-bbq-pit", "f7-elevator"]
         },
         {
           "id": "f7-elevator",
-          "name": "Elevator",
-          "polygon": [[240, 50], [290, 50], [290, 110], [240, 110]],
-          "adjacencies": ["f7-game-room", "f7-dining-hall", "f6-elevator"]
+          "name": "Elevator Hall",
+          "polygon": [[330, 90], [400, 90], [400, 220], [330, 220]],
+          "adjacencies": ["f7-game-room", "f7-arcade", "f7-dining-hall", "f6-elevator"]
         }
       ]
     }
