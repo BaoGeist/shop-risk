@@ -15,6 +15,7 @@ export interface TerritoryState {
 export interface GameState {
   players: Player[];
   territories: Map<string, TerritoryState>;
+  adjacencies: Map<string, string[]>; // effective adjacencies (bridges through elevators)
   currentPlayerIndex: number;
   phase: Phase;
   armiesToPlace: number;

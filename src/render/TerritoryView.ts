@@ -14,17 +14,25 @@ export class TerritoryView {
   private isSelected = false;
   private isHighlighted = false;
 
+  private isPassthrough: boolean;
+
   constructor(
     data: TerritoryData,
     state: TerritoryState | undefined,
     players: Player[],
     onClick: (id: string) => void,
     isNeutral = false,
+    isPassthrough = false,
   ) {
+    this.isPassthrough = isPassthrough;
     this.territoryId = data.id;
     this.container = new Container();
-    this.container.eventMode = 'static';
-    this.container.cursor = 'pointer';
+    if (isPassthrough) {
+      this.container.eventMode = 'none';
+    } else {
+      this.container.eventMode = 'static';
+      this.container.cursor = 'pointer';
+    }
 
     // Convert polygon to isometric
     const isoPolygon = data.polygon.map(([x, y]) => {
@@ -42,7 +50,7 @@ export class TerritoryView {
     this.container.addChild(this.highlight);
 
     // Draw the polygon shape
-    this.drawPolygon(isoPolygon, state, players, isNeutral);
+    this.drawPolygon(isoPolygon, state, players, isNeutral, isPassthrough);
     this.drawHighlightPolygon(isoPolygon);
 
     // Territory name
@@ -61,9 +69,9 @@ export class TerritoryView {
     this.nameText.y = center.y - 8;
     this.container.addChild(this.nameText);
 
-    // Army count
+    // Army count (hidden for passthrough)
     this.armyText = new Text({
-      text: state ? String(state.armies) : '0',
+      text: (state && !isPassthrough) ? String(state.armies) : '',
       style: {
         fontFamily: 'Segoe UI, system-ui, sans-serif',
         fontSize: 14,
@@ -100,9 +108,10 @@ export class TerritoryView {
   }
 
   update(state: TerritoryState | undefined, players: Player[]) {
+    if (this.isPassthrough) return; // elevators don't change
     if (!state) return;
     const owner = players.find((p) => p.id === state.ownerId);
-    const color = owner ? owner.color : 0x444444;
+    const color = owner ? owner.color : 0x555566;
 
     this.bg.tint = color;
     this.armyText.text = String(state.armies);
@@ -134,13 +143,19 @@ export class TerritoryView {
     state: TerritoryState | undefined,
     players: Player[],
     isNeutral: boolean,
+    isPassthrough: boolean,
   ) {
     const owner = state ? players.find((p) => p.id === state.ownerId) : null;
     const color = owner ? owner.color : 0x555566;
 
     this.bg.poly(polygon.flat());
-    if (isNeutral && (!state || state.ownerId === NEUTRAL_OWNER)) {
-      // Neutral hallway: dashed/dimmer look
+    if (isPassthrough) {
+      // Elevator: distinct metallic look, non-interactive
+      this.bg.fill({ color: 0x8899bb, alpha: 0.25 });
+      this.bg.stroke({ color: 0xaabbdd, width: 2, alpha: 0.7 });
+      return; // no tint — always the same color
+    } else if (isNeutral && (!state || state.ownerId === NEUTRAL_OWNER)) {
+      // Neutral hallway: dimmer look
       this.bg.fill({ color: 0xffffff, alpha: 0.35 });
       this.bg.stroke({ color: 0x8888aa, width: 1, alpha: 0.6 });
     } else {

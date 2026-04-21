@@ -3,7 +3,12 @@ import type { MapConfig } from '../map/MapData';
 import { resolveCombat } from './Combat';
 import { calculateReinforcements } from './Rules';
 import { PLAYER_COLORS } from '../render/constants';
-import { getAdjacencies } from '../map/MapLoader';
+import { buildEffectiveAdjacencies } from '../map/MapLoader';
+
+/** Helper to get adjacencies from state */
+export function getEffectiveAdjacencies(state: GameState, id: string): string[] {
+  return state.adjacencies.get(id) ?? [];
+}
 
 // ── Initialization ──────────────────────────────────────────────
 
@@ -20,80 +25,90 @@ export function createPlayers(count: number): Player[] {
 /** Neutral owner sentinel — no player owns this territory */
 export const NEUTRAL_OWNER = -1;
 
-export function createInitialState(
-  map: MapConfig,
-  playerCount: number,
-): GameState {
-  const players = createPlayers(playerCount);
-
-  // Separate neutral (hallways) from claimable territories
+/** Get all territory categories from a map */
+export function categorizeTerritories(map: MapConfig) {
   const neutralIds: string[] = [];
   const claimableIds: string[] = [];
   for (const floor of map.floors) {
     for (const t of floor.territories) {
-      if (t.neutral) {
-        neutralIds.push(t.id);
-      } else {
-        claimableIds.push(t.id);
-      }
+      if (t.passthrough) continue;
+      else if (t.neutral) neutralIds.push(t.id);
+      else claimableIds.push(t.id);
     }
   }
+  return { neutralIds, claimableIds };
+}
 
-  // Shuffle claimable territories
-  const shuffled = [...claimableIds].sort(() => Math.random() - 0.5);
-
+/** Create initial state for draft phase — no territories owned yet */
+export function createDraftState(
+  map: MapConfig,
+  orderedPlayers: Player[],
+): GameState {
+  const { neutralIds } = categorizeTerritories(map);
+  const adjacencies = buildEffectiveAdjacencies(map);
   const territories = new Map<string, TerritoryState>();
 
-  // Neutral territories get a small garrison but no owner
+  // Neutral hallways get a small garrison
   for (const id of neutralIds) {
     territories.set(id, { ownerId: NEUTRAL_OWNER, armies: 2 });
   }
 
-  // Distribute claimable territories round-robin, each starts with 1
-  for (let i = 0; i < shuffled.length; i++) {
-    territories.set(shuffled[i], {
-      ownerId: players[i % playerCount].id,
-      armies: 1,
-    });
+  // Claimable territories start unowned (NEUTRAL_OWNER with 0 armies)
+  const { claimableIds } = categorizeTerritories(map);
+  for (const id of claimableIds) {
+    territories.set(id, { ownerId: NEUTRAL_OWNER, armies: 0 });
   }
 
-  // Give each player a few bonus armies (fewer than before — scrappier start)
-  const bonusPerPlayer = Math.max(3, Math.floor(claimableIds.length / playerCount));
-  for (const player of players) {
-    const owned = [...territories.entries()].filter(
-      ([_, t]) => t.ownerId === player.id,
-    );
-    let remaining = bonusPerPlayer;
-    while (remaining > 0) {
-      for (const [id] of owned) {
-        if (remaining <= 0) break;
-        const t = territories.get(id)!;
-        territories.set(id, { ...t, armies: t.armies + 1 });
-        remaining--;
-      }
+  return {
+    players: orderedPlayers,
+    territories,
+    adjacencies,
+    currentPlayerIndex: 0,
+    phase: 'setup',
+    armiesToPlace: 0,
+    selectedTerritoryId: null,
+  };
+}
+
+/** Claim a territory during draft — sets owner and gives 1 army */
+export function draftPick(
+  state: GameState,
+  territoryId: string,
+  playerId: number,
+): GameState {
+  const territory = state.territories.get(territoryId);
+  if (!territory) throw new Error(`Unknown territory: ${territoryId}`);
+  if (territory.ownerId !== NEUTRAL_OWNER || territory.armies !== 0) {
+    throw new Error('Territory already claimed');
+  }
+  const newTerritories = new Map(state.territories);
+  newTerritories.set(territoryId, { ownerId: playerId, armies: 3 });
+  return { ...state, territories: newTerritories };
+}
+
+/** Transition from draft to first player's reinforce phase */
+export function startGame(state: GameState, map: MapConfig): GameState {
+  // Remaining unclaimed rooms become neutral with garrison
+  const newTerritories = new Map(state.territories);
+  for (const [id, t] of newTerritories) {
+    if (t.ownerId === NEUTRAL_OWNER && t.armies === 0) {
+      newTerritories.set(id, { ownerId: NEUTRAL_OWNER, armies: 2 });
     }
   }
 
-  const state: GameState = {
-    players,
-    territories,
+  const newState: GameState = {
+    ...state,
+    territories: newTerritories,
     currentPlayerIndex: 0,
     phase: 'reinforce',
-    armiesToPlace: calculateReinforcements(
-      {
-        players,
-        territories,
-        currentPlayerIndex: 0,
-        phase: 'reinforce',
-        armiesToPlace: 0,
-        selectedTerritoryId: null,
-      },
-      map,
-    ),
+    armiesToPlace: 0,
     selectedTerritoryId: null,
   };
 
-  return state;
+  return {
+    ...newState,
+    armiesToPlace: calculateReinforcements(newState, map),
+  };
 }
 
 // ── Phase Actions ───────────────────────────────────────────────
@@ -135,7 +150,7 @@ export function placeArmy(state: GameState, territoryId: string): GameState {
 
 export function attack(
   state: GameState,
-  map: MapConfig,
+  _map: MapConfig,
   fromId: string,
   toId: string,
   diceCount: number,
@@ -152,8 +167,8 @@ export function attack(
   if (diceCount > from.armies - 1) throw new Error('Too many dice');
   if (diceCount < 1 || diceCount > 3) throw new Error('Invalid dice count');
 
-  // Check adjacency
-  const adj = getAdjacencies(map, fromId);
+  // Check adjacency (using effective adjacencies that bridge through elevators)
+  const adj = state.adjacencies.get(fromId) ?? [];
   if (!adj.includes(toId)) throw new Error('Territories not adjacent');
 
   const defenderDiceCount = Math.min(2, to.armies);
@@ -202,7 +217,7 @@ export function skipAttack(state: GameState): GameState {
 
 export function fortify(
   state: GameState,
-  map: MapConfig,
+  _map: MapConfig,
   fromId: string,
   toId: string,
   armyCount: number,
@@ -219,19 +234,20 @@ export function fortify(
   if (armyCount >= from.armies) throw new Error('Must leave at least 1 army');
   if (armyCount < 1) throw new Error('Must move at least 1 army');
 
-  const adj = getAdjacencies(map, fromId);
+  const adj = state.adjacencies.get(fromId) ?? [];
   if (!adj.includes(toId)) throw new Error('Territories not adjacent');
 
   const newTerritories = new Map(state.territories);
   newTerritories.set(fromId, { ...from, armies: from.armies - armyCount });
   newTerritories.set(toId, { ...to, armies: to.armies + armyCount });
 
-  return advanceTurn({ ...state, territories: newTerritories }, map);
+  return advanceTurn({ ...state, territories: newTerritories }, _map);
 }
 
 export function skipFortify(state: GameState, map: MapConfig): GameState {
   if (state.phase !== 'fortify') throw new Error('Not in fortify phase');
   return advanceTurn(state, map);
+
 }
 
 function advanceTurn(state: GameState, map: MapConfig): GameState {

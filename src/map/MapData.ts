@@ -4,6 +4,7 @@ export interface TerritoryData {
   polygon: [number, number][];
   adjacencies: string[];
   neutral?: boolean; // hallways/corridors — unowned at start
+  passthrough?: boolean; // elevators — can't be owned, just connects adjacencies
 }
 
 export interface FloorData {

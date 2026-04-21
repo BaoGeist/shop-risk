@@ -1,11 +1,24 @@
 import type { MapConfig } from '../map/MapData';
 import type { GameState } from './GameState';
-import { placeArmy, attack, skipAttack, fortify, skipFortify } from './GameLoop';
-import { getAdjacencies } from '../map/MapLoader';
+import {
+  NEUTRAL_OWNER,
+  placeArmy,
+  attack,
+  skipAttack,
+  fortify,
+  skipFortify,
+  draftPick,
+  startGame,
+  getEffectiveAdjacencies,
+  categorizeTerritories,
+} from './GameLoop';
 import { IsometricRenderer } from '../render/IsometricRenderer';
 import { HUD } from '../ui/HUD';
 import { DicePanel } from '../ui/DicePanel';
 import { FloorSelector } from '../ui/FloorSelector';
+import { DraftScreen } from '../ui/DraftScreen';
+
+const PICKS_PER_PLAYER = 4;
 
 export class GameController {
   private map: MapConfig;
@@ -14,8 +27,14 @@ export class GameController {
   private hud: HUD;
   private dicePanel: DicePanel;
   private floorSelector: FloorSelector;
+  private draftScreen: DraftScreen;
   private selectedSource: string | null = null;
-  private isProcessing = false; // prevent clicks during dice animation
+  private isProcessing = false;
+
+  // Draft state
+  private isDrafting = false;
+  private draftPlayerIndex = 0;
+  private draftPickCount = 0;
 
   constructor(
     map: MapConfig,
@@ -28,13 +47,79 @@ export class GameController {
     this.hud = new HUD();
     this.dicePanel = new DicePanel();
     this.floorSelector = new FloorSelector(map);
+    this.draftScreen = new DraftScreen();
 
-    // Wire up events
     this.renderer.setTerritoryClickHandler((id) => this.onTerritoryClick(id));
     this.hud.setEndPhaseHandler(() => this.onEndPhase());
     this.floorSelector.setHandler((index) => this.renderer.focusFloor(index));
 
-    this.refresh();
+    // Start draft
+    this.startDraft();
+  }
+
+  private startDraft() {
+    this.isDrafting = true;
+    this.draftPlayerIndex = 0;
+    this.draftPickCount = 0;
+
+    // Highlight claimable territories
+    const { claimableIds } = categorizeTerritories(this.map);
+    const claimable = new Set(
+      claimableIds.filter((id) => {
+        const t = this.state.territories.get(id);
+        return t && t.ownerId === NEUTRAL_OWNER && t.armies === 0;
+      }),
+    );
+    this.renderer.highlightTerritories(claimable, 0xffffff);
+
+    this.showDraftPrompt();
+    this.renderer.update(this.state);
+    this.hud.update(this.state, this.map);
+  }
+
+  private showDraftPrompt() {
+    const player = this.state.players[this.draftPlayerIndex];
+    this.draftScreen.showPickPrompt(player, this.draftPickCount + 1, PICKS_PER_PLAYER);
+  }
+
+  private handleDraftClick(id: string) {
+    const territory = this.state.territories.get(id);
+    if (!territory) return;
+    // Only allow picking unclaimed rooms (not hallways, not already claimed)
+    if (territory.ownerId !== NEUTRAL_OWNER || territory.armies !== 0) return;
+
+    const player = this.state.players[this.draftPlayerIndex];
+    this.state = draftPick(this.state, id, player.id);
+    this.draftPickCount++;
+
+    this.renderer.update(this.state);
+    this.renderer.clearHighlights();
+
+    if (this.draftPickCount >= PICKS_PER_PLAYER) {
+      // Move to next player
+      this.draftPickCount = 0;
+      this.draftPlayerIndex++;
+
+      if (this.draftPlayerIndex >= this.state.players.length) {
+        // Draft complete — start game
+        this.isDrafting = false;
+        this.draftScreen.remove();
+        this.state = startGame(this.state, this.map);
+        this.refresh();
+        return;
+      }
+    }
+
+    // Highlight remaining claimable
+    const { claimableIds } = categorizeTerritories(this.map);
+    const remaining = new Set(
+      claimableIds.filter((cid) => {
+        const t = this.state.territories.get(cid);
+        return t && t.ownerId === NEUTRAL_OWNER && t.armies === 0;
+      }),
+    );
+    this.renderer.highlightTerritories(remaining, 0xffffff);
+    this.showDraftPrompt();
   }
 
   private refresh() {
@@ -47,7 +132,13 @@ export class GameController {
   private async onTerritoryClick(id: string) {
     if (this.isProcessing) return;
 
-    const territory = this.state.territories.get(id)!;
+    if (this.isDrafting) {
+      this.handleDraftClick(id);
+      return;
+    }
+
+    const territory = this.state.territories.get(id);
+    if (!territory) return;
     const currentPlayer = this.state.players[this.state.currentPlayerIndex];
 
     switch (this.state.phase) {
@@ -82,16 +173,14 @@ export class GameController {
     currentPlayerId: number,
   ) {
     if (!this.selectedSource) {
-      // Select source territory
       if (ownerId !== currentPlayerId) return;
       const territory = this.state.territories.get(id)!;
-      if (territory.armies < 2) return; // need at least 2
+      if (territory.armies < 2) return;
 
       this.selectedSource = id;
       this.renderer.selectTerritory(id);
 
-      // Highlight valid targets
-      const adj = getAdjacencies(this.map, id);
+      const adj = getEffectiveAdjacencies(this.state, id);
       const validTargets = new Set(
         adj.filter((a) => {
           const t = this.state.territories.get(a);
@@ -100,26 +189,22 @@ export class GameController {
       );
       this.renderer.highlightTerritories(validTargets, 0xff4444);
     } else if (this.selectedSource === id) {
-      // Deselect
       this.selectedSource = null;
       this.renderer.clearHighlights();
       this.renderer.selectTerritory(null);
     } else {
-      // Attack target
-      const adj = getAdjacencies(this.map, this.selectedSource);
+      const adj = getEffectiveAdjacencies(this.state, this.selectedSource);
       if (!adj.includes(id)) {
-        // Clicked non-adjacent or own territory — reset selection
         this.selectedSource = null;
         this.renderer.clearHighlights();
         this.renderer.selectTerritory(null);
-        // If it's our territory, start new selection
         if (ownerId === currentPlayerId) {
           this.handleAttack(id, ownerId, currentPlayerId);
         }
         return;
       }
 
-      if (ownerId === currentPlayerId) return; // can't attack own
+      if (ownerId === currentPlayerId) return;
 
       const fromTerritory = this.state.territories.get(this.selectedSource)!;
       const toTerritory = this.state.territories.get(id)!;
@@ -128,7 +213,6 @@ export class GameController {
 
       this.isProcessing = true;
 
-      // Show dice dialog
       const diceCount = await this.dicePanel.showAttackDialog(
         fromData?.name ?? this.selectedSource,
         toData?.name ?? id,
@@ -138,18 +222,15 @@ export class GameController {
       );
 
       if (diceCount === 0) {
-        // Cancelled
         this.isProcessing = false;
         this.selectedSource = null;
         this.refresh();
         return;
       }
 
-      // Resolve combat
       const result = attack(this.state, this.map, this.selectedSource, id, diceCount);
       this.state = result.state;
 
-      // Show result
       await this.dicePanel.showResult(result.result, result.result.captured);
 
       this.isProcessing = false;
@@ -172,15 +253,13 @@ export class GameController {
     if (ownerId !== currentPlayerId) return;
 
     if (!this.selectedSource) {
-      // Select source
       const territory = this.state.territories.get(id)!;
       if (territory.armies < 2) return;
 
       this.selectedSource = id;
       this.renderer.selectTerritory(id);
 
-      // Highlight valid targets (adjacent own territories)
-      const adj = getAdjacencies(this.map, id);
+      const adj = getEffectiveAdjacencies(this.state, id);
       const validTargets = new Set(
         adj.filter((a) => {
           const t = this.state.territories.get(a);
@@ -189,13 +268,11 @@ export class GameController {
       );
       this.renderer.highlightTerritories(validTargets, 0x44ff44);
     } else if (this.selectedSource === id) {
-      // Deselect
       this.selectedSource = null;
       this.renderer.clearHighlights();
       this.renderer.selectTerritory(null);
     } else {
-      // Fortify to target
-      const adj = getAdjacencies(this.map, this.selectedSource);
+      const adj = getEffectiveAdjacencies(this.state, this.selectedSource);
       if (!adj.includes(id)) {
         this.selectedSource = null;
         this.refresh();
@@ -206,7 +283,6 @@ export class GameController {
       const moveable = from.armies - 1;
       if (moveable < 1) return;
 
-      // Move half (rounded up) for simplicity, or all if only 1
       const toMove = Math.ceil(moveable / 2);
       this.state = fortify(this.state, this.map, this.selectedSource, id, toMove);
       this.selectedSource = null;

@@ -454,6 +454,102 @@ html, body {
   box-shadow: 0 6px 30px rgba(231, 76, 60, 0.5);
 }
 
+/* ── Draft ── */
+#draft-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 150;
+}
+
+.draft-content {
+  text-align: center;
+  background: rgba(20, 20, 50, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 32px 48px;
+  backdrop-filter: blur(20px);
+}
+
+.draft-content h2 {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.roll-results {
+  margin-bottom: 16px;
+}
+
+.roll-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 16px;
+  justify-content: center;
+}
+
+.roll-position {
+  width: 24px;
+  text-align: right;
+  color: #888;
+}
+
+.roll-name {
+  width: 80px;
+  text-align: left;
+  font-weight: bold;
+}
+
+.roll-dice {
+  font-size: 20px;
+  font-weight: bold;
+  color: #f39c12;
+}
+
+.draft-hint {
+  color: #aaa;
+  margin-bottom: 16px;
+}
+
+.draft-btn {
+  padding: 10px 28px;
+  font-size: 14px;
+  font-weight: bold;
+  background: linear-gradient(135deg, #3498db, #2ecc71);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.draft-btn:hover {
+  transform: scale(1.05);
+}
+
+#draft-prompt {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(10, 10, 30, 0.9);
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
 /* ── Victory ── */
 #victory-overlay {
   position: absolute;

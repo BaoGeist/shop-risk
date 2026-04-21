@@ -56,6 +56,7 @@ export class FloorLayer {
         state.players,
         onTerritoryClick,
         territory.neutral ?? false,
+        territory.passthrough ?? false,
       );
       this.territoryViews.set(territory.id, view);
       this.container.addChild(view.container);
