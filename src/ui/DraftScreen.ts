@@ -12,6 +12,7 @@ export class DraftScreen {
   constructor() {
     this.overlay = document.createElement('div');
     this.overlay.id = 'draft-overlay';
+    this.overlay.style.display = 'none';
     document.getElementById('hud')!.appendChild(this.overlay);
   }
 

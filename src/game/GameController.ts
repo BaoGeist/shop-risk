@@ -53,11 +53,16 @@ export class GameController {
     this.hud.setEndPhaseHandler(() => this.onEndPhase());
     this.floorSelector.setHandler((index) => this.renderer.focusFloor(index));
 
-    // Start draft
-    this.startDraft();
+    // Kick off: roll for order → draft → play
+    this.rollThenDraft();
   }
 
-  private startDraft() {
+  private async rollThenDraft() {
+    // Roll for turn order
+    const orderedPlayers = await this.draftScreen.rollForOrder(this.state.players);
+    this.state = { ...this.state, players: orderedPlayers };
+
+    // Start draft
     this.isDrafting = true;
     this.draftPlayerIndex = 0;
     this.draftPickCount = 0;
