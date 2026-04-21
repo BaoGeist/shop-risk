@@ -3,6 +3,7 @@ export interface TerritoryData {
   name: string;
   polygon: [number, number][];
   adjacencies: string[];
+  neutral?: boolean; // hallways/corridors — unowned at start
 }
 
 export interface FloorData {

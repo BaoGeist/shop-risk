@@ -55,6 +55,7 @@ export class FloorLayer {
         territoryState,
         state.players,
         onTerritoryClick,
+        territory.neutral ?? false,
       );
       this.territoryViews.set(territory.id, view);
       this.container.addChild(view.container);

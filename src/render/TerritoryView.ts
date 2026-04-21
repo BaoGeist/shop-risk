@@ -1,6 +1,7 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import type { TerritoryData } from '../map/MapData';
 import type { Player, TerritoryState } from '../game/GameState';
+import { NEUTRAL_OWNER } from '../game/GameLoop';
 import { toIsometric } from './constants';
 
 export class TerritoryView {
@@ -18,6 +19,7 @@ export class TerritoryView {
     state: TerritoryState | undefined,
     players: Player[],
     onClick: (id: string) => void,
+    isNeutral = false,
   ) {
     this.territoryId = data.id;
     this.container = new Container();
@@ -40,7 +42,7 @@ export class TerritoryView {
     this.container.addChild(this.highlight);
 
     // Draw the polygon shape
-    this.drawPolygon(isoPolygon, state, players);
+    this.drawPolygon(isoPolygon, state, players, isNeutral);
     this.drawHighlightPolygon(isoPolygon);
 
     // Territory name
@@ -131,13 +133,20 @@ export class TerritoryView {
     polygon: [number, number][],
     state: TerritoryState | undefined,
     players: Player[],
+    isNeutral: boolean,
   ) {
     const owner = state ? players.find((p) => p.id === state.ownerId) : null;
-    const color = owner ? owner.color : 0x444444;
+    const color = owner ? owner.color : 0x555566;
 
     this.bg.poly(polygon.flat());
-    this.bg.fill({ color: 0xffffff, alpha: 0.7 });
-    this.bg.stroke({ color: 0xffffff, width: 1.5, alpha: 0.8 });
+    if (isNeutral && (!state || state.ownerId === NEUTRAL_OWNER)) {
+      // Neutral hallway: dashed/dimmer look
+      this.bg.fill({ color: 0xffffff, alpha: 0.35 });
+      this.bg.stroke({ color: 0x8888aa, width: 1, alpha: 0.6 });
+    } else {
+      this.bg.fill({ color: 0xffffff, alpha: 0.7 });
+      this.bg.stroke({ color: 0xffffff, width: 1.5, alpha: 0.8 });
+    }
     this.bg.tint = color;
   }
 

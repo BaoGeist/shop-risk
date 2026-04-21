@@ -3,7 +3,7 @@ import type { MapConfig } from '../map/MapData';
 import { resolveCombat } from './Combat';
 import { calculateReinforcements } from './Rules';
 import { PLAYER_COLORS } from '../render/constants';
-import { getAllTerritoryIds, getAdjacencies } from '../map/MapLoader';
+import { getAdjacencies } from '../map/MapLoader';
 
 // ── Initialization ──────────────────────────────────────────────
 
@@ -17,18 +17,39 @@ export function createPlayers(count: number): Player[] {
   }));
 }
 
+/** Neutral owner sentinel — no player owns this territory */
+export const NEUTRAL_OWNER = -1;
+
 export function createInitialState(
   map: MapConfig,
   playerCount: number,
 ): GameState {
   const players = createPlayers(playerCount);
-  const territoryIds = getAllTerritoryIds(map);
 
-  // Shuffle territories
-  const shuffled = [...territoryIds].sort(() => Math.random() - 0.5);
+  // Separate neutral (hallways) from claimable territories
+  const neutralIds: string[] = [];
+  const claimableIds: string[] = [];
+  for (const floor of map.floors) {
+    for (const t of floor.territories) {
+      if (t.neutral) {
+        neutralIds.push(t.id);
+      } else {
+        claimableIds.push(t.id);
+      }
+    }
+  }
 
-  // Distribute territories round-robin
+  // Shuffle claimable territories
+  const shuffled = [...claimableIds].sort(() => Math.random() - 0.5);
+
   const territories = new Map<string, TerritoryState>();
+
+  // Neutral territories get a small garrison but no owner
+  for (const id of neutralIds) {
+    territories.set(id, { ownerId: NEUTRAL_OWNER, armies: 2 });
+  }
+
+  // Distribute claimable territories round-robin, each starts with 1
   for (let i = 0; i < shuffled.length; i++) {
     territories.set(shuffled[i], {
       ownerId: players[i % playerCount].id,
@@ -36,18 +57,14 @@ export function createInitialState(
     });
   }
 
-  // Give each player bonus starting armies (total 20 per player, minus territories owned)
-  const startingArmies = Math.max(
-    20,
-    Math.floor(shuffled.length / playerCount) + 10,
-  );
+  // Give each player a few bonus armies (fewer than before — scrappier start)
+  const bonusPerPlayer = Math.max(3, Math.floor(claimableIds.length / playerCount));
   for (const player of players) {
     const owned = [...territories.entries()].filter(
       ([_, t]) => t.ownerId === player.id,
     );
-    let remaining = startingArmies - owned.length;
+    let remaining = bonusPerPlayer;
     while (remaining > 0) {
-      // Distribute evenly across owned territories
       for (const [id] of owned) {
         if (remaining <= 0) break;
         const t = territories.get(id)!;
