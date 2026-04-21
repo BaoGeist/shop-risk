@@ -54,20 +54,49 @@ export function buildEffectiveAdjacencies(
     allTerritories.filter((t) => t.passthrough).map((t) => t.id),
   );
 
+  // Bridge through passthrough: follow exactly one passthrough-to-passthrough hop
+  // (room → elevator → adjacent elevator → rooms on that floor)
+  // This means you can reach one floor up or down, not skip floors.
+  function collectThroughPassthroughs(
+    startPassthroughId: string,
+    originId: string,
+  ): string[] {
+    const result: string[] = [];
+    const startPassthrough = allTerritories.find((t) => t.id === startPassthroughId);
+    if (!startPassthrough) return result;
+
+    // Collect non-passthrough neighbors of the starting passthrough (same floor rooms)
+    for (const nId of startPassthrough.adjacencies) {
+      if (nId !== originId && !passthroughIds.has(nId)) {
+        result.push(nId);
+      }
+    }
+
+    // Follow one hop to adjacent passthroughs (next floor elevator)
+    for (const nId of startPassthrough.adjacencies) {
+      if (passthroughIds.has(nId)) {
+        const nextPassthrough = allTerritories.find((t) => t.id === nId);
+        if (!nextPassthrough) continue;
+        for (const bridgedId of nextPassthrough.adjacencies) {
+          if (bridgedId !== originId && !passthroughIds.has(bridgedId)) {
+            result.push(bridgedId);
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
   for (const t of allTerritories) {
     if (t.passthrough) continue; // passthroughs don't appear in game state
 
     const adj = new Set<string>();
     for (const neighborId of t.adjacencies) {
       if (passthroughIds.has(neighborId)) {
-        // Bridge through passthrough — add all non-passthrough neighbors of the passthrough
-        const passthrough = allTerritories.find((pt) => pt.id === neighborId);
-        if (passthrough) {
-          for (const bridgedId of passthrough.adjacencies) {
-            if (bridgedId !== t.id && !passthroughIds.has(bridgedId)) {
-              adj.add(bridgedId);
-            }
-          }
+        // Bridge through passthrough chain (follows elevator-to-elevator links)
+        for (const bridged of collectThroughPassthroughs(neighborId, t.id)) {
+          adj.add(bridged);
         }
       } else {
         adj.add(neighborId);
