@@ -1,12 +1,13 @@
 import './style.css';
-import { loadMap } from './map/MapLoader';
 import { createPlayers, createDraftState } from './game/GameLoop';
+import officeMap from './map/maps/office.json';
+import type { MapConfig } from './map/MapData';
 import { IsometricRenderer } from './render/IsometricRenderer';
 import { GameController } from './game/GameController';
 import { StartScreen } from './ui/StartScreen';
 
 async function boot() {
-  const map = await loadMap('/src/map/maps/office.json');
+  const map = officeMap as MapConfig;
 
   // Start screen — pick player count
   const startScreen = new StartScreen();
