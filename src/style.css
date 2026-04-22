@@ -307,14 +307,16 @@ html, body {
 }
 
 .die {
-  width: 40px;
-  height: 40px;
-  line-height: 40px;
+  width: 52px;
+  height: 52px;
+  line-height: 52px;
   text-align: center;
-  font-size: 20px;
+  font-size: 32px;
   font-weight: bold;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: transform 0.2s, border-color 0.3s, box-shadow 0.3s;
+  display: inline-block;
 }
 
 .die.attacker {
@@ -327,24 +329,70 @@ html, body {
   color: #fff;
 }
 
+.die.rolling {
+  animation: dice-shake 0.1s infinite;
+}
+
+.die.landed {
+  animation: dice-land 0.3s ease-out;
+  transform: scale(1.1);
+}
+
+.die.winner {
+  border-color: #2ecc71;
+  box-shadow: 0 0 12px rgba(46, 204, 113, 0.6);
+  transform: scale(1.15);
+}
+
+.die.loser {
+  opacity: 0.4;
+  transform: scale(0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+@keyframes dice-shake {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(-2px, 1px) rotate(-3deg); }
+  50% { transform: translate(2px, -1px) rotate(3deg); }
+  75% { transform: translate(-1px, -2px) rotate(-2deg); }
+  100% { transform: translate(1px, 2px) rotate(1deg); }
+}
+
+@keyframes dice-land {
+  0% { transform: scale(1.4) rotate(10deg); }
+  50% { transform: scale(0.95) rotate(-3deg); }
+  100% { transform: scale(1.1) rotate(0deg); }
+}
+
 .dice-outcome {
-  margin-top: 12px;
-  font-size: 14px;
+  margin-top: 16px;
+  font-size: 15px;
+  transition: opacity 0.5s ease-in;
 }
 
 .dice-outcome .loss {
   color: #e74c3c;
+  font-weight: 600;
+  margin: 4px 0;
 }
 
 .dice-outcome .win {
   color: #2ecc71;
+  font-weight: 600;
+  margin: 4px 0;
 }
 
 .dice-outcome .capture {
   color: #f39c12;
   font-weight: bold;
-  font-size: 16px;
-  margin-top: 8px;
+  font-size: 18px;
+  margin-top: 10px;
+  animation: capture-pulse 0.6s ease-in-out 2;
+}
+
+@keyframes capture-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
 
 .dice-continue-btn {
